@@ -1,0 +1,318 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Saikikoko</title>
+        <meta name="keywords" content="关键词">
+        <meta name="description" content="描述">
+        <meta name="author" content="Saikikoko">
+        <style>
+            body{font-family: "Microsoft YaHei",serif;user-select:none;}
+            body,dl,dd,p,h1,h2,h3,h4,h5,h6{margin:0;}
+            ol,ul,li{margin:0;padding:0;list-style:none;}
+            img{border:none;}
+            a{text-decoration: none;}
+
+            #wrap{
+                overflow: hidden;
+                position: relative;
+                width: 512px;
+                height: 668px;
+                margin: auto;
+                background: #f7c5aa;
+            }
+
+            #wrap #title,#wrap #game,#wrap #over,#wrap #score{
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+            }
+            #wrap #game,#wrap #over,#wrap #score{
+                display: none;
+            }
+            #wrap #title h4{
+                margin-top: 150px;
+                color: #fff;
+                font-size: 55px;
+                text-align: center;
+                letter-spacing: 5px;
+            }
+            #wrap #title #start{
+                width: 250px;
+                height: 174px;
+                margin: 90px auto 0;
+                background: url("img/bg.png") no-repeat;
+                cursor: pointer;
+                transition: .3s;
+            }
+            #wrap #title #start:hover{
+                transform: rotate(-90deg);
+            }
+            #wrap #game{
+                top: 0;
+                bottom: 0;
+                height: 0;
+                margin: auto;
+            }
+            #wrap #game.start{
+                height: 100%;
+                background-color: #f7c5aa;
+                transition: height .3s;
+            }
+            #game .wxz,#game .hotdog{
+                position: absolute;
+            }
+            #wrap #score{
+                top: 5px;
+                left: 5px;
+            }
+            #wrap #score img{
+                width: 33px;
+                height: 37px;
+                vertical-align: middle;
+            }
+            #wrap #score span{
+                font-size: 24px;
+                font-weight: 400;
+                vertical-align: middle;
+            }
+            #wrap #over{
+                background-color: #f7c5aa;
+            }
+            #wrap #over p{
+                width: 100%;
+                margin-top: 150px;
+                color: #fff;
+                font-size: 45px;
+                text-align: center;
+            }
+            #wrap #over button{
+                display: block;
+                width: 233px;
+                height: 78px;
+                margin: 70px auto;
+                background-color: #f1a15a;
+                border: none;
+                border-radius: 3px;
+                color: #fff;
+                font-size: 30px;
+                letter-spacing: 7px;
+                cursor: pointer;
+            }
+            #wrap #over .over{
+                width: 250px;
+                height: 174px;
+                margin: 90px auto 0;
+                background: url("img/bg.png") no-repeat;
+            }
+            @keyframes shake{
+                0%, 100% {transform: translateX(0);}
+                10%, 30%, 50%, 70%, 90% {transform: translateX(-10px);}
+                20%, 40%, 60%, 80% {transform: translateX(10px);}
+            }
+        </style>
+    </head>
+    <body>
+        <div id="wrap">
+            <!--开始界面-->
+            <div id="title">
+                <h4>ig牛逼</h4>
+                <div id="start"></div>
+            </div>
+            <!--游戏区域-->
+            <div id="game"></div>
+            <!--积分-->
+            <div id="score">
+                <img src="img/rg.png" alt="">
+                <span id="result">: 0</span>
+            </div>
+            <!--结算部分-->
+            <div id="over">
+                <p class="score"></p>
+                <button id="restart">重新开始</button>
+                <div class="over"></div>
+            </div>
+        </div>
+        
+        <script>
+            (function () {
+                //获取重要的节点对象
+                let oWrap = document.getElementById("wrap"),
+                    oTitle = document.getElementById("title"),
+                    oGame = document.getElementById("game"),
+                    oScore = document.getElementById("score"),
+                    oOver = document.getElementById("over"),
+                    oStart = document.getElementById("start"),
+                    aWxz = document.getElementsByClassName("wxz"),
+                    oResult = document.getElementById("result"),
+                    oRestart = document.getElementById("restart"),
+                    aScore = document.getElementsByClassName("score")
+                ;
+                //重要变量
+                let wrapLeft = oWrap.offsetLeft,
+                    wrapTop = oWrap.offsetTop,
+                    wrapWidth = oWrap.offsetWidth,
+                    wrapHeight = oWrap.offsetHeight,
+                    score = 0,
+                    moveTimer,
+                    creTimer
+                ;
+                //添加点击事件
+                oStart.addEventListener("click",start);
+                oRestart.onclick = function () {
+                    oOver.style.display = "none";
+                    oTitle.style.display = "block";
+                }
+                function start(e) {
+                    e = e || window.event;
+                    show();
+                    setTimeout(()=>{
+                        //生成王校长
+                        creW({startX:e.pageX,startY:e.pageY});
+                        //王校长移动
+                        moveTimer = wxzMove({startX:e.pageX,startY:e.pageY});
+                        //生成热狗
+                        setTimeout(creHotdog,1000);
+                    });
+                }
+                //页面显示
+                function show(){
+                    oTitle.style.display = "none";
+                    oGame.style.display = "block";
+                    oScore.style.display = "block";
+                    setTimeout(()=>{ oGame.classList.add("start");});
+                }
+                //生成wxz
+                function creW(pos){
+                    let wxz = new Image(),
+                        width = 65,
+                        height = 62,
+                        left = pos.startX - wrapLeft-width/2,
+                        top = pos.startY - wrapTop-height/2;
+                    wxz.src = "img/wxz.png";
+                    wxz.width = 65;
+                    wxz.height = 62;
+                    wxz.style.left = left + "px";
+                    wxz.style.top = top + "px";
+                    wxz.className = "wxz";
+                    oGame.appendChild(wxz);
+                }
+                //移动wxz
+                function wxzMove(pos){
+                    let wxz = aWxz[0],
+                        sX = pos.startX,
+                        sY = pos.startY,
+                        sLeft = wxz.offsetLeft,
+                        sTop = wxz.offsetTop,
+                        minLeft = - wxz.width/2,
+                        maxLeft = wrapWidth - wxz.width/2,
+                        minTop = - wxz.height/2,
+                        maxTop = wrapHeight - wxz.height/2;
+                    ;
+
+                    document.addEventListener("mousemove",move);
+                    function move(e) {
+                        let mX = e.pageX,
+                            mY = e.pageY,
+                            x_ = mX - sX,
+                            y_ = mY - sY,
+                            left,
+                            top
+                        ;
+                        left = sLeft + x_;
+                        top = sTop + y_;
+                        left = Math.min(left,maxLeft);
+                        left = Math.max(left,minLeft);
+                        top = Math.min(top,maxTop);
+                        top = Math.max(top,minTop);
+                        wxz.style.left = left + "px";
+                        wxz.style.top = top + "px";
+                    }
+                    return move;
+                }
+                //生成热狗
+                function creHotdog(){
+                    let hotDog = new Image(),
+                        width = 33,
+                        height = 37,
+                        minLeft = - width/2,
+                        maxLeft = wrapWidth - width/2,
+                        maxTop = wrapHeight - height/2,
+                        bool
+                    ;
+                    hotDog.src = "img/rg.png";
+                    hotDog.width = width;
+                    hotDog.height = height;
+                    hotDog.className = "hotdog"
+
+                    !function hotdog() {
+                        let newHotdog = hotDog.cloneNode(),
+                            speed = Math.floor(Math.random()*9+1),
+                            top = -height;
+                        newHotdog.style.left = Math.floor(Math.random()*(maxLeft+1) + minLeft) + "px";
+                        newHotdog.style.top = top + "px";
+                        oGame.appendChild(newHotdog);
+                        !function m(){
+                            if(!newHotdog.parentNode)return;
+                            top += speed;
+                            newHotdog.style.top = top + "px";
+                            if(top>maxTop){
+                                //移除热狗
+                                oGame.removeChild(newHotdog)
+                                //游戏结束
+                                document.removeEventListener("mousemove",moveTimer);
+                                clearTimeout(creTimer);
+                                if(!bool){
+                                    bool = gameOver();
+                                }
+                            }else{
+                                requestAnimationFrame(m);
+                            }
+                            if(ifHit(aWxz[0],newHotdog)){
+                                if(!newHotdog.parentNode)return;
+                                oGame.removeChild(newHotdog);
+                                //更新分数
+                                upScore();
+                            }
+                        }();
+                        creTimer = setTimeout(hotdog,500);
+                    }();
+
+                }
+                //碰撞检测
+                function ifHit(obj1,obj2) {
+                    let t1 = obj1.offsetTop,
+                        b1 = obj1.offsetHeight + t1,
+                        l1 = obj1.offsetLeft,
+                        r1 = obj1.offsetWidth + l1;
+                    let t2 = obj2.offsetTop,
+                        b2 = obj2.offsetHeight + t2,
+                        l2 = obj2.offsetLeft,
+                        r2 = obj2.offsetWidth + l2;
+
+                    return !(t2>b1||b2<t1||r2<l1||l2>r1);
+                }
+                //更新积分
+                function upScore() {
+                    score++;
+                    oResult.innerText = ": " + score;
+                }
+                //游戏结束
+                function gameOver() {
+                    setTimeout(()=>{
+                        oGame.style.display = "none";
+                        oScore.style.display = "none";
+                        oOver.style.display = "block";
+                        aScore[0].innerHTML = "你的分数：" + score;
+                        oGame.innerHTML = "";
+                        score = 0;
+                        oResult.innerText = ": " + score;
+                    },2000)
+                    return true;
+                }
+            })();
+        </script>
+    </body>
+</html>
